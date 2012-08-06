@@ -11,17 +11,15 @@ package_json = require("../package.json")
 bold = '\x1b[0;1m'
 green = '\x1b[0;32m'
 red = '\x1b[0;31m'
+blue = '\x1b[0;34m'
 reset = '\x1b[0m'
 
 complete = (err, res)->
         code = 0
-
         if err
-                console.log red + util.inspect(err) + reset if err
+                console.log "#{red}#{util.inspect(err)}#{reset}"
                 code = 1
-
-        console.log green + res + reset if res
-
+        console.log "#{blue}#{res}#{reset}" if res
         process.exit(code)
 
 program.name = "flash"
