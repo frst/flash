@@ -167,13 +167,11 @@ program.command("install [name]")
         .action (name)->
                 flash.install name, complete
 
-program.command("add [name]")
-        .description("Install a dependency or component as necessary")
+program.command("use [name]")
+        .description("Use a plugin or dependency")
         .action (name)->
-
                 unless name
-                        program.prompt 'name', (name)->
-                                flash.add_dependency name, complete
+                        flash.list_dependencies name, complete
                 else
                         flash.add_dependency name, complete
 
