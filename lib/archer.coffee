@@ -90,12 +90,29 @@ module.exports =
                         console.log(red + 'err> ' + reset + err) if err
                         cb(err || stderr, stdout)
 
-        deploy: (cb)->
+        deploy: (host, cb)->
+                if typeof host == "function"
+                        host = "onfrst.com"
+                        user = "nrub" # XXX
+                        cb = host
+
                 project = package_json.name
                 archive = "#{project}.tgz"
                 mime_type = mime.lookup(archive)
 
                 @launch "git archive --format=tar --prefix=#{project}/ HEAD | gzip > #{archive}", (err, res)=>
+
+                        # TODO if err == "fatal: Not a valid object name" then "touch .gitignore && git add .gitignore && git init && git commit -m 'initial commit'"
+
+                        remote_command = "git clone git@onfrst.com:#{project}.git;cd ~/#{project};"
+                        @launch "ssh #{user}@#{host} \"#{remote_command}\"", (err, res)=>
+                        #@launch "scp #{archive} #{host}:/home/#{user}/#{archive}", (err, res)=>
+                                console.log err if err
+
+                                # run a command to unarchive and deploy application
+
+                                console.log res
+
                         #console.log archive
                         fs.stat archive, (err, stat)->
                                 fs.readFile archive, (err, file)->
@@ -112,9 +129,10 @@ module.exports =
                                                         {'content-type': 'application/json',body: JSON.stringify(data)}
                                                         ,{body:file}
                                                 ]
-                                        frst.post options, (err, res)->
-                                                console.log 'posted', res
-                                                cb(null, 'done') if cb
+                                        #frst.post options, (err, res)->
+                                        #        console.log 'posted', res
+                                        #        cb(null, 'done') if cb
+
 
                 #@launch 'fleet deploy --hub=onfrst.com:7000 --secret=elevenanddragons', (err, res) =>
                 #        @clean => @setup => @start => cb(err, 'done')

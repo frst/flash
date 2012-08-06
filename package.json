@@ -1,21 +1,22 @@
 {
   "name": "archer",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "A command line tool for speedy application management",
   "keywords": ["deployment", "framework", "mongoose", "coffee-script"],
-  "homepage": "https://github.com/frst/deflagrate",
+  "homepage": "https://github.com/frst/archer",
+  "preferGlobal": true,
   "bugs": {
-    "url": "https://github.com/frst/deflagrate",
+    "url": "https://github.com/frst/archer",
     "email": "paul@onfrst.com"
   },
-  "main": "archer",
+  "main": "lib/archer.coffee",
   "bin": "./bin/cli.coffee",
   "repository": {
     "type": "git",
-    "url": "https://github.com/frst/deflagrate.git"
+    "url": "https://github.com/frst/archer.git"
   },
   "scripts": {
-    "test": "./node_modules/mocha/bin/mocha --compilers coffee:coffee-script test/*.coffee"
+    "test": "cake test"
   },
   "engines": {
     "node": "0.6.12"

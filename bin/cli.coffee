@@ -181,7 +181,7 @@ program.command("add [name]")
 
 help_text = "#{bold}For usage information run:#{reset} archer --help"
 program.command("*")
-        .description("Fallback command")
+        .description("Display help text")
         .action ()->
                 console.log help_text
 
