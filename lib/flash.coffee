@@ -246,6 +246,11 @@ module.exports =
                         console.log server
                 cb(null, 'done')
 
+        list_dependencies: (name, cb)->
+                # TODO
+                console.log 'no dependencies'
+                cb(null, 'done')
+
         add_dependency: (name, cb)->
                 # is this a versioned string? name@0.0.0
                 [name, version] = name.split("@") if name.match("@")
