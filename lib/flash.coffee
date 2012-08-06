@@ -137,24 +137,24 @@ module.exports =
                                         #        cb(null, 'done') if cb
 
 
-                #@launch 'fleet deploy --hub=onfrst.com:7000 --secret=elevenanddragons', (err, res) =>
+                #@local 'fleet deploy --hub=onfrst.com:7000 --secret=elevenanddragons', (err, res) =>
                 #        @clean => @setup => @start => cb(err, 'done')
 
         clean: (cb)->
-                @launch 'fleet exec -- rm -rf node_modules', (err, res) =>
+                @local 'fleet exec -- rm -rf node_modules', (err, res) =>
                         cb(err, 'done') if cb
 
         setup: (cb)->
-                @launch 'fleet exec -- npm install -l', (err, res) =>
+                @local 'fleet exec -- npm install -l', (err, res) =>
                         cb(err, 'done') if cb
 
         start: (cb)->
-                @launch 'fleet spawn -- coffee server.coffee', (err, res) =>
+                @local 'fleet spawn -- coffee server.coffee', (err, res) =>
                         cb(err, 'done') if cb
 
         stop: (pid, cb)->
                 return cb('process id is required', null) unless pid
-                @launch "fleet stop #{pid}", (err, res) =>
+                @local "fleet stop #{pid}", (err, res) =>
                         cb(err, 'done') if cb
 
         restart: (pid, cb)->
@@ -162,11 +162,11 @@ module.exports =
                         cb(err, 'done') if cb
 
         ps: (cb)->
-                @launch 'fleet ps', (err, res)=>
+                @local 'fleet ps', (err, res)=>
                         cb(err, "done") if cb
 
         test: (project, cb)->
-                @launch "mocha --compilers coffee:coffee-script test/*.coffee", (err, res)=>
+                @local "mocha --compilers coffee:coffee-script test/*.coffee", (err, res)=>
                         cb(err, 'done') if cb
 
         create: (project, type, cb)->
@@ -180,13 +180,13 @@ module.exports =
 
                 async.waterfall [
                         (callback)=>
-                                @launch "cp -r #{template} #{project}", callback
+                                @local "cp -r #{template} #{project}", callback
                         ,(res, callback)=>
-                                @launch "cd #{project}; git init", callback
+                                @local "cd #{project}; git init", callback
                         ,(res, callback)=>
-                                @launch "cd #{project}; git add .", callback
+                                @local "cd #{project}; git add .", callback
                         ,(res, callback)=>
-                                @launch "cd #{project}; git commit -m 'initial commit for #{project}'", callback
+                                @local "cd #{project}; git commit -m 'initial commit for #{project}'", callback
                         ], (err, res)->
                                 cb(null, 'done') if cb
 
@@ -272,7 +272,7 @@ module.exports =
         add_npm_dependency: (name, version, cb)->
                 console.log 'adding npm dependency', name, version
                 try
-                        @launch "npm install #{name}", cb
+                        @local "npm install #{name}", cb
                 catch e
                         cb(e)
 
