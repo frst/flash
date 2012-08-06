@@ -109,18 +109,12 @@ module.exports =
                 archive = "#{project}.tgz"
                 mime_type = mime.lookup(archive)
 
-                @launch "git archive --format=tar --prefix=#{project}/ HEAD | gzip > #{archive}", (err, res)=>
-
-                        # TODO if err == "fatal: Not a valid object name" then "touch .gitignore && git add .gitignore && git init && git commit -m 'initial commit'"
-
-                        remote_command = "git clone git@onfrst.com:#{project}.git;cd ~/#{project};"
-                        @launch "ssh #{user}@#{host} \"#{remote_command}\"", (err, res)=>
-                        #@launch "scp #{archive} #{host}:/home/#{user}/#{archive}", (err, res)=>
-                                console.log err if err
-
-                                # run a command to unarchive and deploy application
-
-                                console.log res
+                @remote """
+                git clone git@onfrst.com:#{project}.git;
+                cd ~/#{project};
+                """, (err, res)=>
+                        console.log err if err
+                        console.log res
 
                         #console.log archive
                         fs.stat archive, (err, stat)->
