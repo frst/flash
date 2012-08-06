@@ -1,5 +1,7 @@
 # Flash
 
+[![Build Status](https://secure.travis-ci.org/frst/flash.png)](http://travis-ci.org/frst/flash)
+
 Flash is a command line tool we use to create, build, deploy, and
 manage our user facing applications.
 
