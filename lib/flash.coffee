@@ -63,22 +63,10 @@ module.exports =
                         cb = app
                         app = null
 
-                # starts a dev server
-                try
-                        main_filepath = path.join(process.cwd(), package_json.main)
-                        args = [main_filepath]
-                        command = if package_json.main.match('coffee') then "coffee" else "node"
-                        app = spawn command, args
-                        app.stdout.on 'data', (data)->
-                                console.log 'stdout: ' + data
-                        app.stderr.on 'data', (data)->
-                                console.log 'stderr: ' + data
-                        app.on 'exit', (code)->
-                                console.log 'exit: ' + code
-                                cb(null, 'done')
-                catch e
-                        console.log e
-                        cb(null, 'done')
+                main_filepath = path.join(process.cwd(), package_json.main)
+                args = [main_filepath]
+                command = if package_json.main.match('coffee') then "coffee" else "node"
+                @local command, args, cb
 
         local: (command, cb)->
                 @launch 'sh', ['-c', command], cb
