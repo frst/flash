@@ -30,61 +30,10 @@ unless nconf.get('user')
         nconf.save()
 #console.log 'user', nconf.get('user')
 
-# TODO we move to own module & open-source
-class Frst
-        access_token: null
-
-        remote: (options, cb)->
-                throw new Error('remote must be called with a route') unless options.route
-
-                api = "https://api.onfrst.com/"
-                api = "http://localhost:42424/"
-                access = if @access_token then "access_token=#{@access_token}"
-                url = "#{api}#{options.route}?#{access}"
-                #console.log url
-
-                data =
-                        url: url
-                        method: options.type
-                        json: options.data
-                #console.log 'remote', data
-                request data, (err, res, body)->
-                        #console.log 'remote res', body
-                        try
-                                body = JSON.parse(body)
-                        catch e
-                                console.log 'err parsing json body', err
-                        err = body if res.statusCode == 404
-                        cb(err, body)
-
-        get: (options, cb)->
-                if typeof options == "string"
-                        route = options
-                        options = {route:route}
-                options.type = 'GET'
-                @remote options, (err, res)=>
-                        cb(err, res[route])
-
-        put: (options, cb)->
-                options.type = 'PUT'
-                @remote options, (err, res)=>
-                        cb(err, res)
-
-        post: (route, data, cb)->
-                options =
-                        type: 'POST'
-                        route: route
-                        data: data
-                @remote options, (err, res)=>
-                        cb(err, res)
-
-        del: (options, cb)->
-                options.type = 'DELETE'
-                @remote options, (err, res)=>
-                        cb(err, res)
-
-frst = new Frst()
-frst.access_token = nconf.get('access_token')
+FrstClient = require("frst")
+frst = new FrstClient
+        access_token: nconf.get('access_token')
+        host: nconf.get('host')
 
 module.exports =
         register: (user, cb)->
