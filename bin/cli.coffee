@@ -45,6 +45,11 @@ program.command("create <name>")
                                 console.log(type)
                                 flash.create name, type, complete
 
+program.command("init")
+        .description("Initialize a local application")
+        .action () ->
+                flash.init complete
+
 program.command("deploy")
         .description("Deploys a server configuration across your nodes")
         .action () ->
