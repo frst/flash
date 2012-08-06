@@ -76,21 +76,28 @@ module.exports =
 
         launch: (command, options, cb)->
                 throw new Error('No command specified') unless command
-                console.log '-', command, options
+
+                host = if command == "ssh" then options[0] else "local"
+
+                console.log "#{blue}[#{host}]: #{reset}#{command} #{options.join(' ').replace(/\n/g, '')}"
                 res = []
 
                 child = spawn(command, options)
+
+
                 child.stderr.on 'data', (chunk)->
-                        console.log chunk
+                        console.log red + "#{red}[#{host}]: #{reset}#{chunk}"
+
                 child.stdout.on 'data', (chunk)->
+                        console.log "#{green}[#{host}]: #{reset}#{chunk}"
                         res.push chunk
-                        console.log chunk
+
                 child.on 'exit', (code)->
-                        console.log(green + '> ' + res)
-                        console.log(red + 'err> ' + code) if code == 0
+                        #console.log(green + '> ' + reset + res)
+                        #console.log(red + '> ' + reset + code) unless code == 0
 
                         code = if code == 0 then null else code
-                        cb(code, res and res.join('\n'))
+                        cb(code, 'done')
 
         deploy: (host, cb)->
                 if typeof host == "function"
