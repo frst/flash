@@ -79,16 +79,29 @@ module.exports =
                         console.log e
                         cb(null, 'done')
 
-        launch: (command, cb)->
-                throw new Error('No command specified') unless command
-                console.log command
+        local: (command, cb)->
+                @launch 'sh', ['-c', command], cb
 
-                # TODO use spawn
-                exec command, (err, stdout, stderr)->
-                        console.log(green + '> ' + reset + stdout) if stdout
-                        console.log(red + 'stderr> ' + reset + stderr) if stderr
-                        console.log(red + 'err> ' + reset + err) if err
-                        cb(err || stderr, stdout)
+        remote: (command, cb)->
+                @launch 'ssh', ['onfrst.com', command], cb
+
+        launch: (command, options, cb)->
+                throw new Error('No command specified') unless command
+                console.log '-', command, options
+                res = []
+
+                child = spawn(command, options)
+                child.stderr.on 'data', (chunk)->
+                        console.log chunk
+                child.stdout.on 'data', (chunk)->
+                        res.push chunk
+                        console.log chunk
+                child.on 'exit', (code)->
+                        console.log(green + '> ' + res)
+                        console.log(red + 'err> ' + code) if code == 0
+
+                        code = if code == 0 then null else code
+                        cb(code, res and res.join('\n'))
 
         deploy: (host, cb)->
                 if typeof host == "function"
