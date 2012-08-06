@@ -10,8 +10,8 @@ package_json = require("../package.json")
 
 bold = '\x1b[0;1m'
 green = '\x1b[0;32m'
-reset = '\x1b[0m'
 red = '\x1b[0;31m'
+reset = '\x1b[0m'
 
 complete = (err, res)->
         code = 0
@@ -179,7 +179,13 @@ program.command("add [name]")
                 else
                         archer.add_dependency name, complete
 
+help_text = "#{bold}For usage information run:#{reset} archer --help"
+program.command("*")
+        .description("Fallback command")
+        .action ()->
+                console.log help_text
+
 program.parse(process.argv)
 
 unless process.argv[2]
-        console.log("TODO usage info")
+        console.log help_text
