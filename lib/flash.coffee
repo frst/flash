@@ -15,8 +15,9 @@ throw "no package.json" unless package_json
 
 bold = '\x1b[0;1m'
 green = '\x1b[0;32m'
-reset = '\x1b[0m'
+blue = '\x1b[0;34m'
 red = '\x1b[0;31m'
+reset = '\x1b[0m'
 
 app =
         session: null
