@@ -283,9 +283,24 @@ module.exports =
         add_npm_dependency: (name, version, cb)->
                 console.log 'adding npm dependency', name, version
                 try
-                        exec "npm install #{name}", (err, stdout, stderr)->
-                                console.log err if err
-                                console.log stdout
-                                cb()
+                        @launch "npm install #{name}", cb
                 catch e
                         cb(e)
+
+        init: (cb)->
+                repo = process.cwd().replace(process.env.HOME + '/', '')
+                console.log 'repo', repo
+                @remote """
+                mkdir -p #{repo}.git;
+                cd #{repo}.git;
+                git --bare init;
+                true
+                """, (res)=>
+                        @local """
+                        git init;
+                        touch .gitignore;
+                        git add .gitignore;
+                        git commit -m 'Add git ignore';
+                        git remote add origin onfrst.com:#{repo}.git;
+                        git push -u origin master
+                        """, cb
