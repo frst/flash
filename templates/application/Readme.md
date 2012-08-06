@@ -6,12 +6,12 @@ This is the readme file for your new frst project.
 
 Start the application
 
-    archer run
+    flash run
     # server running on localhost:29547
 
-## Installing archer
+## Installing flash
 
-Archer is a tool for managing node.js applications and deployments
+Flash is a tool for managing node.js applications and deployments
 
     curl http://onfrst.com/install.sh | sh
 

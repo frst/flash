@@ -1,19 +1,19 @@
 {
-  "name": "archer",
-  "version": "0.5.2",
+  "name": "flash",
+  "version": "0.5.3",
   "description": "A command line tool for speedy application management",
   "keywords": ["deployment", "framework", "mongoose", "coffee-script"],
-  "homepage": "https://github.com/frst/archer",
+  "homepage": "https://github.com/frst/flash",
   "preferGlobal": true,
   "bugs": {
-    "url": "https://github.com/frst/archer",
+    "url": "https://github.com/frst/flash",
     "email": "paul@onfrst.com"
   },
-  "main": "lib/archer.coffee",
+  "main": "lib/flash.coffee",
   "bin": "./bin/cli.coffee",
   "repository": {
     "type": "git",
-    "url": "https://github.com/frst/archer.git"
+    "url": "https://github.com/frst/flash.git"
   },
   "scripts": {
     "test": "cake test"

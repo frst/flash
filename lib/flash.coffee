@@ -23,7 +23,7 @@ app =
         user: null
         access_token: null
 
-nconf.file(process.env.HOME + '/.archer.json')
+nconf.file(process.env.HOME + '/.flash.json')
 #console.log 'nconf', nconf
 unless nconf.get('user')
         nconf.set('user', {email:"anonymous@onfrst.com"})
@@ -37,14 +37,14 @@ frst = new FrstClient
 
 module.exports =
         register: (user, cb)->
-                console.log('archer.register', user)
+                console.log('flash.register', user)
                 frst.post 'users', user, (err, res)->
                         console.log(err) if err
                         console.log 'res', res
                         cb(err, res)
 
         login: (user, cb)->
-                #console.log('archer.login', user)
+                #console.log('flash.login', user)
                 frst.post 'login', user, (err, res)->
                         if err
                                 cb(err, null)

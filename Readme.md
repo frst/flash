@@ -1,14 +1,14 @@
-# Archer - For hitting the point from a distance
+# Flash
 
-Archer is a command line tool we use to create, build, deploy, and
+Flash is a command line tool we use to create, build, deploy, and
 manage our user facing applications.
 
-## Installing Archer
+## Installing Flash
 
-Installing Archer is quick on a POSIX system. You may simply run the
+Installing Flash is quick on a POSIX system. You may simply run the
 following command inside your shell to get it going.
 
-    npm install archer -g
+    npm install flash -g
 
 Documentation for installing Node.js and the Node Package Manager can
 be found at [the Node.js homepage](http://nodejs.org)
@@ -17,14 +17,14 @@ be found at [the Node.js homepage](http://nodejs.org)
 
 Create, and start an example application
 
-    archer init test-application --template=blog-application
+    flash init test-application --template=blog-application
     cd blog-application
-    archer run
+    flash run
     # server running on localhost:29547
 
 ## Deployment
 
-We provide a simple cloud application service for running your archer
+We provide a simple cloud application service for running your flash
 applications. An account registration is required, and hosting will
 affect your account usage. If you are offering an open source
 application, send us an email and we can look into setting you up with
@@ -36,12 +36,12 @@ using traditional Node.js techniques.
 
 ### Hosted
 
-You can use any domain or subdomain to host an archer
+You can use any domain or subdomain to host an flash
 application, simply create a `CNAME` record with your DNS provider
 that points to `quiver.onfrst.com`.
 
     # inside of a project
-    archer deploy [site-url]
+    flash deploy [site-url]
 
 ### Private
 
@@ -54,7 +54,7 @@ The `build` command includes all dependencies, so the platform you use
 to build should be similar to your hosted environment.
 
     # in your build environment
-    archer build
+    flash build
     scp [project-name].tgz [site-url]:/home/user/
 
     # on your remote host

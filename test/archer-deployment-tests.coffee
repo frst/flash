@@ -1,7 +1,7 @@
 chai = require("chai")
 should = chai.should()
-archer = require("../lib/archer")
+flash = require("../lib/flash")
 
-describe "archer", ->
+describe "flash", ->
         it "should be something", ->
-                should.exist(archer)
+                should.exist(flash)

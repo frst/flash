@@ -4,7 +4,7 @@ async = require("async")
 exec = require('child_process').exec
 util = require 'util'
 
-archer = require("../lib/archer")
+flash = require("../lib/flash")
 
 package_json = require("../package.json")
 
@@ -24,14 +24,14 @@ complete = (err, res)->
 
         process.exit(code)
 
-program.name = "archer"
+program.name = "flash"
 program
         .version(package_json.version)
 
 program.command("run")
         .description("Run the application in the current directory")
         .action () ->
-                archer.run complete
+                flash.run complete
 
 program.command("create <name>")
         .description("Create a local application")
@@ -45,17 +45,17 @@ program.command("create <name>")
                                         callback(null, type)
                         ], (err, type)->
                                 console.log(type)
-                                archer.create name, type, complete
+                                flash.create name, type, complete
 
 program.command("deploy")
         .description("Deploys a server configuration across your nodes")
         .action () ->
-                archer.deploy complete
+                flash.deploy complete
 
 program.command("ps")
         .description("Shows processes running on any drones")
         .action (project)->
-                archer.ps complete
+                flash.ps complete
 
 program.command("login")
         .description("Create a session the programmable-matter server")
@@ -73,7 +73,7 @@ program.command("login")
                                         callback(null, res)
                         ], (err, res)->
                                 console.log(res)
-                                archer.login res, (err, body)->
+                                flash.login res, (err, body)->
                                         console.log('finished')
 
 program.command("register")
@@ -103,38 +103,38 @@ program.command("register")
                                         process.stdin.destroy();
                                         callback(null, user)
                         ], (err, user)->
-                                archer.register user, (err, user)->
+                                flash.register user, (err, user)->
                                         console.log(user == 'ok')
 
 program.command("test")
         .description("Run the test suite")
         .action ()->
-                archer.test complete
+                flash.test complete
 
 program.command("stop [pid]")
         .description("Stop the current application")
         .action (pid)->
-                archer.stop pid, complete
+                flash.stop pid, complete
 
 program.command("start [name]")
         .description("Start the current application")
         .action (name)->
-                archer.start name, complete
+                flash.start name, complete
 
 program.command("restart [pid]")
         .description("Restart the current application")
         .action (pid)->
-                archer.restart pid, complete
+                flash.restart pid, complete
 
 program.command("ports")
         .description("Display the running port configuration")
         .action ()->
-                archer.ports complete
+                flash.ports complete
 
 program.command("jobs [name]")
         .description("Run a given job by name or list all available jobs")
         .action (name)->
-                archer.job name, complete
+                flash.job name, complete
 
 program.command("servers [command]")
         .description("List all servers")
@@ -150,24 +150,24 @@ program.command("servers [command]")
                                                 name: host
                                         cb(null, server)
                                 ], (err, server)->
-                                        archer.add_server server, completed
+                                        flash.add_server server, completed
                 else
-                        archer.servers complete
+                        flash.servers complete
 
 program.command("version [command] [version]")
         .description("List or update the version of the current application")
         .action (command, version)->
-                archer.version complete
+                flash.version complete
 
                 if command == "update"
                         # TODO prompt for version number unless version
                         program.prompt ''
-                        archer.version version, complete
+                        flash.version version, complete
 
 program.command("install [name]")
         .description("Install an application recipe by name or init file")
         .action (name)->
-                archer.install name, complete
+                flash.install name, complete
 
 program.command("add [name]")
         .description("Install a dependency or component as necessary")
@@ -175,11 +175,11 @@ program.command("add [name]")
 
                 unless name
                         program.prompt 'name', (name)->
-                                archer.add_dependency name, complete
+                                flash.add_dependency name, complete
                 else
-                        archer.add_dependency name, complete
+                        flash.add_dependency name, complete
 
-help_text = "#{bold}For usage information run:#{reset} archer --help"
+help_text = "#{bold}For usage information run:#{reset} flash --help"
 program.command("*")
         .description("Display help text")
         .action ()->
