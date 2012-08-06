@@ -1,6 +1,6 @@
 {
   "name": "flash",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "A command line tool for speedy application management",
   "keywords": ["deployment", "framework", "mongoose", "coffee-script"],
   "homepage": "https://github.com/frst/flash",
@@ -34,6 +34,7 @@
     "async": "0.1.22",
     "mime": "1.2.6",
     "nconf": "0.6.4",
-    "frst": "0.0.5"
+    "frst": "0.0.5",
+    "volo": "0.2.2"
   }
 }

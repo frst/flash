@@ -274,6 +274,13 @@ module.exports =
                 catch e
                         console.log 'not an npm dependency', e
 
+        add_component: (name, version, cb)->
+                @local """
+                mkdir -p public/js/vendor;
+                cd public/js/vendor;
+                volo add #{name}
+                """, cb
+
         add_npm_dependency: (name, version, cb)->
                 console.log 'adding npm dependency', name, version
                 try
