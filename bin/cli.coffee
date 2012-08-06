@@ -180,6 +180,19 @@ program.command("use [name]")
                 else
                         flash.add_dependency name, complete
 
+program.command("log")
+        .description("Display the last 100 log entries")
+        .action ()->
+                flash.log complete
+
+program.command("i [command]")
+        .description("Check information on server")
+        .action (command)->
+                command = "all" unless command
+                flash[command] complete
+
+######
+
 help_text = "#{bold}For usage information run:#{reset} flash --help"
 program.command("*")
         .description("Display help text")

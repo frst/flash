@@ -298,3 +298,28 @@ module.exports =
                         git remote add origin onfrst.com:#{repo}.git;
                         git push -u origin master
                         """, cb
+
+        # Retrieve a log for the current application
+        log: (cb)->
+                repo = process.cwd().replace(process.env.HOME + '/', '')
+                @remote "tail -n 100 /var/log/#{repo}/error.log", cb
+
+        # Basic disk usage
+        disk: (cb)-> @remote 'df -h', cb
+
+        # Find largest directories
+        ducks: (cb)-> @remote 'cd /;sudo du -cks * |sort -rn |head -11'
+
+        # List of processes
+        top: (cb)-> @remote 'top -b -n 1 | head -n 12', cb
+
+        # Who is logged in
+        who: (cb)-> @remote 'who', cb
+
+        # List node processes
+        node: (cb)-> @remote 'ps -eo args | grep node | grep -v grep', cb
+
+        # Free memory
+        free: (cb)-> @remote 'free', cb
+        all: (cb)->
+                @disk => @top => @who => @node => @free cb
