@@ -1,6 +1,6 @@
 {
   "name": "flash",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "description": "A command line tool for speedy application management",
   "keywords": ["deployment", "framework", "mongoose", "coffee-script"],
   "homepage": "https://github.com/frst/flash",
@@ -9,7 +9,7 @@
     "url": "https://github.com/frst/flash",
     "email": "paul@onfrst.com"
   },
-  "main": "lib/flash.coffee",
+  "main": "./lib/flash.coffee",
   "bin": "./bin/cli.coffee",
   "repository": {
     "type": "git",

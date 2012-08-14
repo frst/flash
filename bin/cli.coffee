@@ -188,8 +188,15 @@ program.command("log")
 program.command("i [command]")
         .description("Check information on server")
         .action (command)->
+                # TODO restrict to the i commands only
                 command = "all" unless command
                 flash[command] complete
+
+program.command("exec <command>")
+        .description("Perform a remote command amongst all servers")
+        .action (command)->
+                #console.log command
+                flash.remote command, complete
 
 ######
 

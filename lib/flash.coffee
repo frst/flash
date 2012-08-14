@@ -1,28 +1,122 @@
 request = require 'request'
 child_process = require 'child_process'
 {spawn, exec} = child_process
+util = require "util"
+print = util.print
 fs = require 'fs'
 path = require 'path'
 mime = require 'mime'
 async = require 'async'
 nconf = require 'nconf'
 
+hosts = [
+        'app1.onfrst.com'
+        'app2.onfrst.com'
+        'app3.onfrst.com'
+        ]
+
 try
         package_json = require(process.cwd() + '/package.json')
 catch e
         #console.log 'not in a project directory'
-throw "no package.json" unless package_json
+throw "no package.json?!" unless package_json
 
-bold = '\x1b[0;1m'
-green = '\x1b[0;32m'
-blue = '\x1b[0;34m'
-red = '\x1b[0;31m'
-reset = '\x1b[0m'
+class Colors
+        constructor: ()->
+                @setType('text')
+
+        # Change the root colors to one of the types available
+        setType: (type)->
+                throw new Error('type unavailable') unless type in ['text', 'bold', 'underline', 'background']
+
+                @black =  @[type].black
+                @red =    @[type].red
+                @green =  @[type].green
+                @yellow = @[type].yellow
+                @blue =   @[type].blue
+                @purple = @[type].purple
+                @cyan =   @[type].cyan
+                @white =  @[type].white
+
+        text:
+                black:  '\x1b[0;30m'
+                red:    '\x1b[0;31m'
+                green:  '\x1b[0;32m'
+                yellow: '\x1b[0;33m'
+                blue:   '\x1b[0;34m'
+                purple: '\x1b[0;35m'
+                cyan:   '\x1b[0;36m'
+                white:  '\x1b[0;37m'
+        bold:
+                black:  '\x1b[1;30m'
+                red:    '\x1b[1;31m'
+                green:  '\x1b[1;32m'
+                yellow: '\x1b[1;33m'
+                blue:   '\x1b[1;34m'
+                purple: '\x1b[1;35m'
+                cyan:   '\x1b[1;36m'
+                white:  '\x1b[1;37m'
+
+        underline:
+                black:  '\x1b[4;30m'
+                red:    '\x1b[4;31m'
+                green:  '\x1b[4;32m'
+                yellow: '\x1b[4;33m'
+                blue:   '\x1b[4;34m'
+                purple: '\x1b[4;35m'
+                cyan:   '\x1b[4;36m'
+                white:  '\x1b[4;37m'
+
+        background:
+                black:  '\x1b[40m'
+                red:    '\x1b[41m'
+                green:  '\x1b[42m'
+                yellow: '\x1b[43m'
+                blue:   '\x1b[44m'
+                purple: '\x1b[45m'
+                cyan:   '\x1b[46m'
+                white:  '\x1b[47m'
+
+        reset: '\x1b[0m'
+        bold: '\x1b[0;1m'
+
+colors = new Colors()
+bold = colors.bold
+red = colors.red
+green = colors.green
+yellow = colors.yellow
+blue = colors.blue
+reset = colors.reset
 
 app =
         session: null
         user: null
         access_token: null
+app.branch = "master"
+app.env = "production"
+app.repo = process.cwd().replace(process.env.HOME + '/', '') # com/onfrst/applications/api, may not need this
+app.repository = package_json.repository.url
+app.application = package_json.name
+app.deployTo = "/var/www/apps/#{app.application}/#{app.env}"
+app.version = package_json.version
+app.releasesDir = "releases"
+app.sharedDir = "shared"
+app.currentDir = "current"
+app.releasesPath = -> path.resolve(app.deployTo, app.releasesDir)
+app.sharedPath = -> path.resolve(app.deployTo, app.sharedDir)
+app.currentPath = -> path.resolve(app.deployTo, app.currentDir)
+app.releasePath = -> path.resolve(app.releasesPath, app.version)
+app.previousRelease = null
+app.latestRelease = null
+app.previousReleasePath = -> path.resolve(app.releasesPath, app.previousRelease)
+app.latestReleasePath = -> path.resolve(app.releasesPath, app.latestRelease)
+app.nodeEntry = package_json.main
+
+app.job = ->
+        if app.env == "production"
+                app.application
+        else
+                "#{app.application}-#{app.env}"
 
 nconf.file(process.env.HOME + '/.flash.json')
 #console.log 'nconf', nconf
@@ -72,24 +166,31 @@ module.exports =
                 @launch 'sh', ['-c', command], cb
 
         remote: (command, cb)->
-                @launch 'ssh', ['onfrst.com', command], cb
+                done = hosts.length
+                for host in hosts
+                        @launch 'ssh', [host, command], ()->
+                                done--
+                setInterval ()->
+                        cb() if cb and done == 0
+                , 100
 
         launch: (command, options, cb)->
                 throw new Error('No command specified') unless command
 
                 host = if command == "ssh" then options[0] else "local"
 
-                console.log "#{blue}[#{host}]: #{reset}#{command} #{options.join(' ').replace(/\n/g, '')}"
+
+                print "#{bold}[#{host}]: #{reset}#{yellow}#{command} #{options.join(' ')}#{reset}\n"
                 res = []
 
                 child = spawn(command, options)
 
 
                 child.stderr.on 'data', (chunk)->
-                        console.log red + "#{red}[#{host}]: #{reset}#{chunk}"
+                        print red + "#{red}[#{host}]: #{reset}#{chunk}\n"
 
                 child.stdout.on 'data', (chunk)->
-                        console.log "#{green}[#{host}]: #{reset}#{chunk}"
+                        print "#{green}[#{host}]: #{reset}#{chunk}\n"
                         res.push chunk
 
                 child.on 'exit', (code)->
@@ -99,71 +200,139 @@ module.exports =
                         code = if code == 0 then null else code
                         cb(code, 'done')
 
-        deploy: (host, cb)->
-                if typeof host == "function"
-                        host = "onfrst.com"
-                        user = "nrub" # XXX
-                        cb = host
+        prepare: (cb)->
+                @remote "ls -x #{app.releasesPath()}", (err, res)->
+                        console.log res
+                        rs = res.replace(/^\s+|\s+$/g, '').split(/\s+/).sort()
+                        app.releases = rs
+                        app.latestRelease = rs[rs.length - 1]
+                        app.previousRelease = rs[rs.length - 2]
+                        cb()
 
-                project = package_json.name
-                archive = "#{project}.tgz"
-                mime_type = mime.lookup(archive)
+        updateCode: (cb)->
+
+                @local "git ls-remote #{app.repository} #{app.branch}", (err, res)=>
+                        head = res.split(/\s+/).shift()
+                        @remote """
+                                if [ -d #{app.sharedPath()}/cached-copy ];
+                                  then cd #{app.sharedPath()}/cached-copy &&
+                                  git fetch -q origin &&
+                                  git fetch --tags -q origin &&
+                                  git reset -q --hard #{head} &&
+                                  git clean -q -d -x -f;
+                                else
+                                  git clone -q #{app.repository} #{app.sharedPath()}/cached-copy &&
+                                  cd #{app.sharedPath()}/cached-copy &&
+                                  git checkout -q -b deploy #{head};
+                                fi
+                                """, =>
+                                        @remote """
+                                                cd #{app.sharedPath()}/cached-copy;
+                                                rm -r node_modules;
+                                                npm install -l;
+                                                cp -RPp #{app.sharedPath()}/cached-copy #{app.releasePath()};
+                                                """, cb
+
+        symlink: (cb)->
 
                 @remote """
-                git clone git@onfrst.com:#{project}.git;
-                cd ~/#{project};
-                """, (err, res)=>
-                        console.log err if err
-                        console.log res
+                        rm -f #{app.currentPath()};
+                        ln -s #{app.releasePath()} #{app.currentPath()};
+                        ln -s #{app.sharedPath()}/logs #{app.currentPath()}/logs;
+                        true
+                        """, cb
 
-                        #console.log archive
-                        fs.stat archive, (err, stat)->
-                                fs.readFile archive, (err, file)->
-                                        #console.log 'read file', stat
-                                        data = {}
-                                        data._attachments = {}
-                                        data._attachments[archive] =
-                                                follows: true
-                                                length: stat.size
-                                                'content_type': mime_type
-                                        options =
-                                                route: 'applications'
-                                                multipart: [
-                                                        {'content-type': 'application/json',body: JSON.stringify(data)}
-                                                        ,{body:file}
-                                                ]
-                                        #frst.post options, (err, res)->
-                                        #        console.log 'posted', res
-                                        #        cb(null, 'done') if cb
+        tag: (cb)->
+                # TODO check if tag exists or not
+                # auto incrementing tag setup
+                # if head & last version differ
+                # increment minor version; update package.json; commit; push tags
+                @local """
+                        git tag #{package_json.version};
+                        git push origin --tags
+                        """, cb
 
+        # Pull latest changes from SCM and symlink latest release
+        # as current release
+        update: (cb)->
+                @prepare => @updateCode => @symlink cb
 
-                #@local 'fleet deploy --hub=onfrst.com:7000 --secret=elevenanddragons', (err, res) =>
-                #        @clean => @setup => @start => cb(err, 'done')
+        # Update code and restart server
+        deploy: (cb)->
+                if @projectSetup
+                        @tag => @update => @restart cb
+                else
+                        @setupUpstart => @tag => @update => @restart cb
 
         clean: (cb)->
                 @local 'fleet exec -- rm -rf node_modules', (err, res) =>
                         cb(err, 'done') if cb
 
         setup: (cb)->
-                @local 'fleet exec -- npm install -l', (err, res) =>
-                        cb(err, 'done') if cb
+
+                dirs = [app.deployTo, app.releasesPath(), app.sharedPath(), "#{app.sharedPath()}/logs"].join(' ')
+                @remote """
+                        NAME=`whoami`;
+                        sudo mkdir -p #{dirs} &&
+                        sudo chown -R $NAME:$NAME #{dirs}
+                        """, cb
+
+        setupUpstart: (cb)->
+                @setup => @writeUpstartScript cb
+
+        writeUpstartScript: (cb)->
+
+                maybeEnv = ''
+                maybeEnv = "env NODE_ENV=\"#{app.env}\"" if app.env
+
+                ups = """
+                        description "#{app.application}"
+
+                        start on startup
+                        stop on shutdown
+
+                        #{maybeEnv}
+
+                        script
+                                export NODE_ENV
+
+                                cd #{app.currentPath()}
+                                /usr/local/bin/coffee #{app.currentPath()}/#{app.nodeEntry}
+                        end script
+                        respawn
+                        """
+
+                if app.env == "production"
+                        file = app.application
+                else
+                        file = "#{app.application}-#{app.env}"
+
+                @remote "sudo echo '#{ups}' > /tmp/upstart.tmp && sudo mv /tmp/upstart.tmp /etc/init/#{file}.conf", cb
 
         start: (cb)->
-                @local 'fleet spawn -- coffee server.coffee', (err, res) =>
-                        cb(err, 'done') if cb
+                @remote "sudo start #{app.job()}", cb
 
-        stop: (pid, cb)->
-                return cb('process id is required', null) unless pid
-                @local "fleet stop #{pid}", (err, res) =>
-                        cb(err, 'done') if cb
+        stop: (cb)->
+                @remote "sudo stop #{app.job()}", cb
 
-        restart: (pid, cb)->
-                @stop pid, => @start (err, res) =>
-                        cb(err, 'done') if cb
+        restart: (cb)->
+                @remote "sudo restart #{app.job()} || sudo start #{app.job()}", cb
+
+        status: (cb)->
+                @remote "sudo status #{app.application}", cb
+
+        rollback: (cb)->
+                @prepare => @rollbackCode => @restart => @rollbackCleanup cb
+
+        rollbackCode: (cb)->
+                if app.previousRelease
+                        @remote "rm #{app.currentPath()}; ln -s #{app.previousReleasePath()} #{app.currentPath()}", cb
+
+        rollbackCleanup: (cb)->
+                @remote "if [ `readlink #{app.currentPath()}` != #{app.latestReleasePath()} ]; then rm -rf #{app.latestReleasePath()}; fi", cb
 
         ps: (cb)->
-                @local 'fleet ps', (err, res)=>
-                        cb(err, "done") if cb
+                @remote "ps", cb
 
         test: (project, cb)->
                 @local "mocha --compilers coffee:coffee-script test/*.coffee", (err, res)=>
@@ -252,10 +421,10 @@ module.exports =
                 cb(null, 'done')
 
         add_dependency: (name, cb)->
-                # is this a versioned string? name@0.0.0
+                # test if this is a versioned string. e.g. name@0.0.0
                 [name, version] = name.split("@") if name.match("@")
 
-                # is this a git repo? git+ssh://github.com/frst/logging.git
+                # Test if this a git repo. e.g. git+ssh://github.com/frst/logging.git
                 if name.match(".git")
                         # is there a tag?
                         if name.match("#")
@@ -288,28 +457,9 @@ module.exports =
                 catch e
                         cb(e)
 
-        init: (cb)->
-                repo = process.cwd().replace(process.env.HOME + '/', '')
-                console.log 'repo', repo
-                @remote """
-                mkdir -p #{repo}.git;
-                cd #{repo}.git;
-                git --bare init;
-                true
-                """, (res)=>
-                        @local """
-                        git init;
-                        touch .gitignore;
-                        git add .gitignore;
-                        git commit -m 'Add git ignore';
-                        git remote add origin onfrst.com:#{repo}.git;
-                        git push -u origin master
-                        """, cb
-
         # Retrieve a log for the current application
         log: (cb)->
-                repo = process.cwd().replace(process.env.HOME + '/', '')
-                @remote "tail -n 100 /var/log/#{repo}/error.log", cb
+                @remote "tail -n 100 /var/log/#{app.application}/error.log", cb
 
         # Basic disk usage
         disk: (cb)-> @remote 'df -h', cb
