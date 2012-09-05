@@ -243,14 +243,31 @@ module.exports =
                         """, cb
 
         tag: (cb)->
-                # TODO check if tag exists or not
-                # auto incrementing tag setup
-                # if head & last version differ
-                # increment minor version; update package.json; commit; push tags
+                version = package_json.version
+                split = version.split('.')
+                if split[2]
+                        split[2] = parseInt(split[2], 10) + 1
+                        up_version = split.join('.')
+
                 @local """
-                        git tag #{package_json.version};
-                        git push origin --tags
+                        LASTTAG=$(git describe --abbrev=0 --tags)
+                        if [ "$LASTTAG" == "#{package_json.version}" ]
+                        then
+                                flash bump
+                                git tag #{up_version};
+                                git push origin --tags
+                        fi
                         """, cb
+
+        bump: (cb)->
+                version = package_json.version
+                split = version.split('.')
+                if split[2]
+                        split[2] = parseInt(split[2], 10) + 1
+                        package_json.version = split.join('.')
+                        file = process.cwd() + '/package.json'
+                        fs.writeFile file, JSON.stringify(package_json, null, 2), (err, file)->
+                                console.log
 
         # Pull latest changes from SCM and symlink latest release
         # as current release

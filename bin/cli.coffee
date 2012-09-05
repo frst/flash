@@ -203,6 +203,16 @@ program.command("exec <command>")
                 #console.log command
                 flash.remote command, complete
 
+program.command("tag")
+        .description("Tag your repository with the current package version")
+        .action ()->
+                flash.tag complete
+
+program.command("bump")
+        .description("Bump your package version by one minor release")
+        .action ()->
+                flash.bump complete
+
 ######
 
 help_text = "#{bold}For usage information run:#{reset} flash --help"
