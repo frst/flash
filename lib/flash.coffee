@@ -244,32 +244,34 @@ module.exports =
                         true
                         """, cb
 
-        tag: (cb)->
-                version = package_json.version
+        up_version: (version)->
                 split = version.split('.')
                 if split[2]
                         split[2] = parseInt(split[2], 10) + 1
-                        up_version = split.join('.')
+                        return up_version = split.join('.')
+                else
+                        console.log("WARNING", "Your version doesn't look to be properly formatted semver")
+                        return version
 
+        tag: (cb)->
+                up_version = @up_version(package_json.version)
                 @local """
-                        LASTTAG=$(git describe --abbrev=0 --tags)
-                        if [ "$LASTTAG" == "#{package_json.version}" ]
+                        LASTTAG=$(git show-ref `git describe --abbrev=0 --tags` --hash)
+                        HEAD=$(git show-ref --head --hash HEAD)
+                        if [ "$LASTTAG" != "$HEAD" ]
                         then
                                 flash bump
                                 git tag #{up_version};
+                                git push origin #{app.branch}
                                 git push origin --tags
                         fi
                         """, cb
 
         bump: (cb)->
-                version = package_json.version
-                split = version.split('.')
-                if split[2]
-                        split[2] = parseInt(split[2], 10) + 1
-                        package_json.version = split.join('.')
-                        file = process.cwd() + '/package.json'
-                        fs.writeFile file, JSON.stringify(package_json, null, 2), (err, file)->
-                                console.log
+                package_json.version = @up_version(package_json.version)
+                file = process.cwd() + '/package.json'
+                fs.writeFile file, JSON.stringify(package_json, null, 4), (err, file)=>
+                        @local "git add package.json; git commit -m \"bump version\"", cb
 
         # Pull latest changes from SCM and symlink latest release
         # as current release
