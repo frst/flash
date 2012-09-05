@@ -204,7 +204,7 @@ program.command("exec <command>")
                 flash.remote command, complete
 
 program.command("tag")
-        .description("Tag your repository with the current package version")
+        .description("Update the package version and tag your repository")
         .action ()->
                 flash.tag complete
 
