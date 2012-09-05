@@ -10,9 +10,7 @@ async = require 'async'
 nconf = require 'nconf'
 
 hosts = [
-        'app1.onfrst.com'
-        'app2.onfrst.com'
-        'app3.onfrst.com'
+        "localhost"
         ]
 
 try
