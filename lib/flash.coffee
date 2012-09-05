@@ -280,10 +280,29 @@ module.exports =
 
         # Update code and restart server
         deploy: (cb)->
-                if @projectSetup
-                        @tag => @update => @restart cb
-                else
-                        @setupUpstart => @tag => @update => @restart cb
+                # deploys an app named api to api.onfrst
+                # flash deploy api
+                # flash deploy api.onfrst.com
+                # TODO get name from cli
+                name = "api"
+                name = "#{name}.onfrst.com" unless name.match(/\./)
+
+                # check to make sure url is valid
+                frst.get "/applications/#{name}", (err, res)=>
+                        console.log("frst.applciations.#{name}", err, res);
+                        unless res.message == "Invalid ObjectId"
+                                cb(err, null)
+                        else
+                                @tag => @local """
+                                git archive --format tar HEAD | gzip -9 > /tmp/#{name}.tgz
+                                """, (err, res)->
+                                        fs.readFile "/tmp/#{name}.tgz", (err, file)->
+                                                app =
+                                                        name: name
+                                                        archive: file
+                                                frst.post "/applications", app, (err, res)->
+                                                        console.log "post res", err, res
+
 
         clean: (cb)->
                 @local 'fleet exec -- rm -rf node_modules', (err, res) =>
