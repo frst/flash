@@ -21,6 +21,8 @@ catch e
         #console.log 'not in a project directory'
 throw "no package.json?!" unless package_json
 
+throw new Error("package.json must have a repository.url") unless package_json.repository and package_json.repository.url
+
 class Colors
         constructor: ()->
                 @setType('text')
