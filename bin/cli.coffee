@@ -22,9 +22,9 @@ complete = (err, res)->
         console.log "#{blue}#{res}#{reset}" if res
         process.exit(code)
 
+
 program.name = "flash"
-program
-        .version(package_json.version)
+program.version(package_json.version)
 
 program.command("run")
         .description("Run the application in the current directory")
