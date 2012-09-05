@@ -60,6 +60,11 @@ program.command("ps")
         .action (project)->
                 flash.ps complete
 
+program.command("whoami")
+        .description("Shows you who you are logged in as")
+        .action ()->
+                flash.whoami complete
+
 program.command("login")
         .description("Create a session the programmable-matter server")
         .action () ->

@@ -480,3 +480,11 @@ module.exports =
         free: (cb)-> @remote 'free', cb
         all: (cb)->
                 @disk => @top => @who => @node => @free cb
+
+        whoami: (cb)->
+                email = nconf.get('user').email
+                unless email
+                        console.log "Not logged in"
+                else
+                        console.log email
+                cb()
