@@ -9,6 +9,8 @@ mime = require 'mime'
 async = require 'async'
 nconf = require 'nconf'
 
+process.on "uncaughtException", (err)-> console.log err
+
 hosts = [
         "localhost"
         ]
