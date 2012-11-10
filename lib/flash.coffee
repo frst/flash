@@ -270,7 +270,7 @@ module.exports =
         bump: (cb)->
                 package_json.version = @up_version(package_json.version)
                 file = process.cwd() + '/package.json'
-                fs.writeFile file, JSON.stringify(package_json, null, 4), (err, file)=>
+                fs.writeFile file, JSON.stringify(package_json, null, 2), (err, file)=>
                         @local "git add package.json; git commit -m \"bump version\"", cb
 
         # Pull latest changes from SCM and symlink latest release
