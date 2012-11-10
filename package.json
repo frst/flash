@@ -1,6 +1,6 @@
 {
   "name": "flash",
-  "version": "0.5.7",
+  "version": "0.5.8",
   "description": "A command line tool for speedy application management",
   "keywords": [
     "deployment",
